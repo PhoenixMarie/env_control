@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+
+<head>
+    <link rel='shortcut icon' type='image/x-icon' href='/favicon.ico' />
+    <link href="style.css" rel="stylesheet">
+    <script src ="d3.v4.min.js"defer></script>
+    <script src ="main.js"defer></script>
+</head>
+
+
+<body>
+    <div class="graph1"></div>
+    <div class="graph2"></div>
+
+
+    <label id="conn_text"></label>
+    <br />
+    <input onclick="change_button_text()" type="button" value="Включить вытяжку" id="myButton1" />
+    <div id="myDIV">
+        
+        <p id="InputState"></p>
+
+        <p>Текущие данные:</p>
+
+        <div id="InsideTemperature">Данные не получены</div>
+        <div id="InsideHumidity">Данные не получены</div>
+
+        <div id="OutsideTemperature">Данные не получены</div>
+        <div id="OutsideHumidity">Данные не получены</div>
+
+
+        <p> Запрос из БД: </p>
+        <p>
+            <input type="datetime-local" id="startTime">
+        </p>
+        <p>
+            <input type="datetime-local" id="endTime">
+        </p>
+
+        <button onclick="MakeRequestToDB()">Выполнить запрос</button>
+
+        <p id="first"></p>
+        <p id="second"></p>
+                <div id="showData"></div>
+    
+    </div>
+
+    <script>
+    </script>
+
+
+</body>
+
+</html>

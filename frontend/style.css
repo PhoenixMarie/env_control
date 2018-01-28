@@ -1,0 +1,85 @@
+body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.graph1 .axis {
+    stroke-width: 1;
+}
+
+.graph1 .axis .tick line {
+    stroke: black;
+}
+
+.graph1 .axis .tick text {
+    fill: black;
+    font-size: 0.7em;
+}
+
+.graph1 .axis .domain {
+    fill: none;
+    stroke: black;
+}
+
+.graph1 .group {
+    fill: none;
+    stroke: black;
+    stroke-width: 1.5;
+}
+
+.graph2 .axis {
+    stroke-width: 1;
+}
+
+.graph2 .axis .tick line {
+    stroke: black;
+}
+
+.graph2 .axis .tick text {
+    fill: black;
+    font-size: 0.7em;
+}
+
+.graph2 .axis .domain {
+    fill: none;
+    stroke: black;
+}
+
+.graph2 .group {
+    fill: none;
+    stroke: black;
+    stroke-width: 1.5;
+}
+
+.grid line {
+    stroke: #ddd;
+}
+
+.graph1 {
+    position: absolute;
+    left: 270px;
+    top: 30px;
+}
+
+.graph2 {
+    position: absolute;
+    left: 270px;
+    top: 230px;
+}
+/* table, th, td {
+    border: 1px solid black;
+} */
+table{
+    overflow-y:scroll;
+    height:100px;
+    display:block;
+    width: 250px;
+    border: 1px solid black;
+    font-size: 0.7em;
+    
+}
+.line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 2px;
+  }
+  
