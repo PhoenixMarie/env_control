@@ -4,7 +4,7 @@ def connect():
     db_connection = sqlite3.connect('logger.db')
     return db_connection
 
-def create_table(db_connection):
+def create_table(db_connection=connect()):
     	with db_connection:
             db_cursor = db_connection.execute('CREATE TABLE IF NOT EXISTS \
                             sensors_data(id INTEGER PRIMARY KEY AUTOINCREMENT,\
@@ -15,12 +15,11 @@ def create_table(db_connection):
                                         outside_humidity REAL,\
                                         input_state INT)')
 
-def dynamic_data_entry(db_connection, 
-                       inside_temperature,
+def dynamic_data_entry(inside_temperature,
                        inside_humidity,
                        outside_temperature,
                        outside_humidity,
-                       input_state):
+                       input_state,db_connection=connect()):
         """Сохраняет данные с датчиков в базу данных"""
         with db_connection:
             db_cursor = db_connection.execute("INSERT INTO \
@@ -36,7 +35,7 @@ def dynamic_data_entry(db_connection,
                                         outside_humidity,
                                         input_state))
 
-def dynamic_data_extraction(db_connection, d_begin, d_end):
+def dynamic_data_extraction(d_begin, d_end,db_connection=connect()):
     """Извлекает данные датчиков из базы данных за выбранный отрезок"""
     with db_connection:
             db_cursor = db_connection.execute(

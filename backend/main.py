@@ -3,7 +3,6 @@ from pin_state_control import *
 import asyncio
 from datetime import date, datetime
 import RPi.GPIO as GPIO
-import sqlite3
 import time
 import json
 import websockets
@@ -14,9 +13,7 @@ SENSOR_2 = BME280(t_mode=BME280_OSAMPLE_8, p_mode=BME280_OSAMPLE_8, h_mode=BME28
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-get_connection = lambda : storage.connect()
-with get_connection() as conn:
-    storage.create_table(conn)
+storage.create_table()
 
 def get_sensors_values():
     sensors_data = {'Temperature': ['', ''], 'Humidity': ['', ''],'Input_state':'', 'ResponseFromDB':None}
@@ -30,16 +27,13 @@ def get_sensors_values():
 async def save_to_db():
     while True:
         values = get_sensors_values()
-        get_connection = lambda : storage.connect()
-        with get_connection() as conn:
-                        storage.dynamic_data_entry(conn,
-                                                values['Temperature'][0],
-                                                values['Humidity'][0],
-                                                values['Temperature'][1],
-                                                values['Humidity'][1],
-                                                values['Input_state'])
-                        await asyncio.sleep(1)
-                        # print('value saved')                      
+        storage.dynamic_data_entry(values['Temperature'][0],
+                                   values['Humidity'][0],
+                                   values['Temperature'][1],
+                                   values['Humidity'][1],
+                                   values['Input_state'])
+        await asyncio.sleep(1)
+        # print('value saved')                      
 
 db_response = None         
 
@@ -72,9 +66,7 @@ async def message_receiver(websocket):
             timestamp_end = json_to_dict.get('endDate')
             d_begin = timestamp_begin.replace("T", " ")
             d_end = timestamp_end.replace("T", " ")
-            get_connection = lambda : storage.connect()
-            with get_connection() as conn:
-                            db_response = storage.dynamic_data_extraction(conn, d_begin, d_end)
+            db_response = storage.dynamic_data_extraction(d_begin, d_end)
 
 async def handler(websocket, path):
     consumer_task = asyncio.ensure_future(message_receiver(websocket))
