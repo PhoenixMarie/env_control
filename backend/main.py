@@ -1,37 +1,23 @@
-from Adafruit_BME280 import *
-from pin_state_control import *
+from hardware_control import *
 import asyncio
 from datetime import date, datetime
-import RPi.GPIO as GPIO
 import time
 import json
 import websockets
-import storage
+from storage import *
 
-SENSOR_1 = BME280(t_mode=BME280_OSAMPLE_8, p_mode=BME280_OSAMPLE_8, h_mode=BME280_OSAMPLE_8,address=0x76)
-SENSOR_2 = BME280(t_mode=BME280_OSAMPLE_8, p_mode=BME280_OSAMPLE_8, h_mode=BME280_OSAMPLE_8,address=0x77)
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+gpio_prepare()
+create_table()
 
-storage.create_table()
-
-def get_sensors_values():
-    sensors_data = {'Temperature': ['', ''], 'Humidity': ['', ''],'Input_state':'', 'ResponseFromDB':None}
-    sensors_data['Temperature'][0] = round(SENSOR_1.read_temperature(), 1)
-    sensors_data['Humidity'][0] = round(SENSOR_1.read_humidity(), 1)
-    sensors_data['Temperature'][1] = round(SENSOR_2.read_temperature(), 1)
-    sensors_data['Humidity'][1] = round(SENSOR_2.read_humidity(), 1)
-    sensors_data['Input_state'] = not GPIO.input(18)
-    return sensors_data
 
 async def save_to_db():
     while True:
         values = get_sensors_values()
-        storage.dynamic_data_entry(values['Temperature'][0],
-                                   values['Humidity'][0],
-                                   values['Temperature'][1],
-                                   values['Humidity'][1],
-                                   values['Input_state'])
+        dynamic_data_entry(values['Temperature'][0],
+                           values['Humidity'][0],
+                           values['Temperature'][1],
+                           values['Humidity'][1],
+                           values['Input_state'])
         await asyncio.sleep(1)
         # print('value saved')                      
 
@@ -66,7 +52,7 @@ async def message_receiver(websocket):
             timestamp_end = json_to_dict.get('endDate')
             d_begin = timestamp_begin.replace("T", " ")
             d_end = timestamp_end.replace("T", " ")
-            db_response = storage.dynamic_data_extraction(d_begin, d_end)
+            db_response = dynamic_data_extraction(d_begin, d_end)
 
 async def handler(websocket, path):
     consumer_task = asyncio.ensure_future(message_receiver(websocket))
