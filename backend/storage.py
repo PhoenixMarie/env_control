@@ -1,5 +1,8 @@
 import json
 import sqlite3
+from hardware_control import *
+import asyncio
+
 def connect():
     db_connection = sqlite3.connect('logger.db')
     return db_connection
@@ -34,6 +37,18 @@ def dynamic_data_entry(inside_temperature,
                                         outside_temperature,
                                         outside_humidity,
                                         input_state))
+
+async def save_to_db():
+    while True:
+        values = get_sensors_values()
+        dynamic_data_entry(values['Temperature'][0],
+                           values['Humidity'][0],
+                           values['Temperature'][1],
+                           values['Humidity'][1],
+                           values['Input_state'])
+        await asyncio.sleep(1)
+        # print('value saved')                      
+
 
 def dynamic_data_extraction(d_begin, d_end,db_connection=connect()):
     """Извлекает данные датчиков из базы данных за выбранный отрезок"""
