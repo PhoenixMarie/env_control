@@ -8,15 +8,14 @@ def connect():
     return db_connection
 
 def create_table(db_connection=connect()):
-    	with db_connection:
-            db_cursor = db_connection.execute('CREATE TABLE IF NOT EXISTS \
-                            sensors_data(id INTEGER PRIMARY KEY AUTOINCREMENT,\
-                                        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\
-                                        inside_temperature REAL,\
-                                        inside_humidity REAL,\
-                                        outside_temperature REAL,\
-                                        outside_humidity REAL,\
-                                        input_state INT)')
+    with db_connection:
+                db_connection.execute("""CREATE TABLE IF NOT EXISTS 
+                                sensors_data(unix_timestamp  INT DEFAULT (strftime('%s','now'))  PRIMARY KEY,
+                                            inside_temperature REAL,
+                                            inside_humidity REAL,
+                                            outside_temperature REAL,
+                                            outside_humidity REAL,
+                                            input_state INT)""")
 
 def dynamic_data_entry(inside_temperature,
                        inside_humidity,
@@ -25,12 +24,12 @@ def dynamic_data_entry(inside_temperature,
                        input_state,db_connection=connect()):
         """Сохраняет данные с датчиков в базу данных"""
         with db_connection:
-            db_cursor = db_connection.execute("INSERT INTO \
-                            sensors_data(inside_temperature,\
-                                        inside_humidity,\
-                                        outside_temperature,\
-                                        outside_humidity,\
-                                        input_state) VALUES (?,?,?,?,?)",
+            db_cursor = db_connection.execute("""INSERT INTO 
+                            sensors_data(inside_temperature,
+                                        inside_humidity,
+                                        outside_temperature,
+                                        outside_humidity,
+                                        input_state) VALUES (?,?,?,?,?)""",
                                         (
                                         inside_temperature,
                                         inside_humidity,
@@ -50,25 +49,34 @@ async def save_to_db():
         # print('value saved')                      
 
 
-def dynamic_data_extraction(d_begin, d_end,db_connection=connect()):
+def dynamic_data_extraction(d_begin, d_end, db_connection=connect()):
     """Извлекает данные датчиков из базы данных за выбранный отрезок"""
     with db_connection:
-            db_cursor = db_connection.execute(
-                "SELECT * FROM sensors_data WHERE created_at BETWEEN ? AND ?", (d_begin, d_end))
-            rows = db_cursor.fetchall()
-            rowarray_list = []
-            for row in rows:
-                temp_dict_to_json = {'timestamp': '', 'temperature': ['', ''], 'humidity': ['', '']}
-                temp_dict_to_json['timestamp'] = row[1]
-                temp_dict_to_json['temperature'][0] = row[2]
-                temp_dict_to_json['humidity'][0] = row[3]
-                temp_dict_to_json['temperature'][1] = row[4]
-                temp_dict_to_json['humidity'][1] = row[5]
+        db_cursor = db_connection.execute(
+            """SELECT 
+                datetime (unix_timestamp , 'unixepoch', 'localtime'),
+                inside_temperature,
+                inside_humidity,
+                outside_temperature,
+                outside_humidity
+                FROM sensors_data 
+                WHERE unix_timestamp 
+                BETWEEN (CAST(strftime('%s', ?) AS INT)) 
+                AND (CAST(strftime('%s', ?) AS INT))""",(d_begin,d_end))
+        rows = db_cursor.fetchall()
+        rowarray_list = []
+        for row in rows:
+            temp_dict_to_json = {'timestamp': '', 'temperature': ['', ''], 'humidity': ['', '']}
+            temp_dict_to_json['timestamp'] = row[0]
+            temp_dict_to_json['temperature'][0] = row[1]
+            temp_dict_to_json['humidity'][0] = row[2]
+            temp_dict_to_json['temperature'][1] = row[3]
+            temp_dict_to_json['humidity'][1] = row[4]
 
-                rowarray_list.append(temp_dict_to_json)
-            # final_json = json.dumps(rowarray_list)
-            # sensor_data['db_response'] = final_json
-            # print(final_json)
-
-            return rowarray_list
-        
+            rowarray_list.append(temp_dict_to_json)
+        # final_json = json.dumps(rowarray_list)
+        # sensor_data['db_response'] = final_json
+        # print(final_json)
+        # print(rows)
+        return rowarray_list
+    

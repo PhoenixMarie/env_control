@@ -1,8 +1,18 @@
 import websockets
 import asyncio
 from storage import *
+from datetime import timezone
+from datetime import datetime
+from pytz import timezone
+import pytz
 
 db_response = None         
+
+def localtime_to_utc(local_time):
+    tz=timezone('America/Argentina/Buenos_Aires')
+    str_to_time = datetime.strptime(local_time, '%Y-%m-%d %H:%M')
+    corrected_time = pytz.utc.localize(str_to_time).astimezone(tz)
+    return(str(corrected_time)[:-9]) #returns string with removed timezone and seconds
 
 async def message_sender(websocket):
     while True:
@@ -31,8 +41,11 @@ async def message_receiver(websocket):
             json_to_dict = json.loads(message)
             timestamp_begin = json_to_dict.get('startDate')
             timestamp_end = json_to_dict.get('endDate')
-            d_begin = timestamp_begin.replace("T", " ")
-            d_end = timestamp_end.replace("T", " ")
+            d_begin = localtime_to_utc(timestamp_begin.replace("T", " "))
+            d_end = localtime_to_utc(timestamp_end.replace("T", " "))
+            print(d_begin)
+            # d_begin = timestamp_begin.replace("T", " ")
+            # d_end = timestamp_end.replace("T", " ")
             db_response = dynamic_data_extraction(d_begin, d_end)
 
 async def handler(websocket, path):
